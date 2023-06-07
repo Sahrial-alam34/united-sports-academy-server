@@ -33,6 +33,10 @@ async function run() {
     const result = await instructorCollection.find().toArray();
     res.send(result)
   })
+  app.get('/classes', async(req, res)=>{
+    const result = await sportsClassCollection.find().toArray();
+    res.send(result)
+  })
 
     // Send a ping to confirm a successful connection
     await client.db("admin").command({ ping: 1 });
