@@ -26,14 +26,32 @@ async function run() {
     // Connect the client to the server	(optional starting in v4.7)
     // await client.connect();
 
+    const usersCollection = client.db("unitedSportsDb").collection("users");
     const instructorCollection = client.db("unitedSportsDb").collection("instructors");
     const sportsClassCollection = client.db("unitedSportsDb").collection("sportsClass");
     const classCartCollection = client.db("unitedSportsDb").collection("classCart");
 
+    // user api
+    app.post('/users',async(req, res)=>{
+      const user = req.body;
+      const query = { email: user.email }
+      const existingUser = await usersCollection.findOne(query);
+
+      if (existingUser) {
+        return res.send({ message: 'user already exists' })
+      }
+
+      const result = await usersCollection.insertOne(user);
+      res.send(result);
+    })
+
+    // instructor api
     app.get('/instructor', async (req, res) => {
       const result = await instructorCollection.find().toArray();
       res.send(result)
     })
+
+    // class api
     app.get('/classes', async (req, res) => {
       const result = await sportsClassCollection.find().toArray();
       res.send(result)
