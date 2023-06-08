@@ -51,16 +51,19 @@ async function run() {
 
     app.patch('/users/admin/:id', async (req, res) => {
       const id = req.params.id;
-      console.log(id);
+      //console.log(id);
+      //console.log('role', req.body.role);
       const filter = { _id: new ObjectId(id) };
+      const options = { upsert: true };
+      
       const updateDoc = {
         $set: {
-          role: 'admin'
-          //role: req.body.role 
+          // role: 'admin'
+          role: req.body.role
         },
       }
 
-      const result = await usersCollection.updateOne(filter, updateDoc);
+      const result = await usersCollection.updateOne(filter, updateDoc,options);
       res.send(result);
 
     })
