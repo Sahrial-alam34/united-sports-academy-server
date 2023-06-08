@@ -24,19 +24,40 @@ const client = new MongoClient(uri, {
 async function run() {
   try {
     // Connect the client to the server	(optional starting in v4.7)
-   // await client.connect();
+    // await client.connect();
 
-   const instructorCollection = client.db("unitedSportsDb").collection("instructors");
-   const sportsClassCollection = client.db("unitedSportsDb").collection("sportsClass");
-    
-  app.get('/instructor', async(req, res)=>{
-    const result = await instructorCollection.find().toArray();
-    res.send(result)
-  })
-  app.get('/classes', async(req, res)=>{
-    const result = await sportsClassCollection.find().toArray();
-    res.send(result)
-  })
+    const instructorCollection = client.db("unitedSportsDb").collection("instructors");
+    const sportsClassCollection = client.db("unitedSportsDb").collection("sportsClass");
+    const classCartCollection = client.db("unitedSportsDb").collection("classCart");
+
+    app.get('/instructor', async (req, res) => {
+      const result = await instructorCollection.find().toArray();
+      res.send(result)
+    })
+    app.get('/classes', async (req, res) => {
+      const result = await sportsClassCollection.find().toArray();
+      res.send(result)
+    })
+
+    // class cart collection api
+    app.get('/carts', async (req, res) => {
+      const email = req.query.email;
+      if (!email) {
+        res.send([])
+      }
+
+      const query = { email: email };
+      const result = await classCartCollection.find(query).toArray();
+      res.send(result);
+
+
+    })
+    app.post('/carts', async (req, res) => {
+      const classItem = req.body;
+      console.log(classItem);
+      const result = await classCartCollection.insertOne(classItem);
+      res.send(result)
+    })
 
     // Send a ping to confirm a successful connection
     await client.db("admin").command({ ping: 1 });
