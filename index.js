@@ -116,7 +116,7 @@ async function run() {
 
     // class api
     app.get('/classes', async (req, res) => {
-      const result = await sportsClassCollection.find().toArray();
+      const result = await sportsClassCollection.find().sort({ createdAt: -1 }).toArray();
       res.send(result)
     })
     app.post("/addClass", async (req, res) => {
