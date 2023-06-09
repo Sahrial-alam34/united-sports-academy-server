@@ -9,8 +9,23 @@ const port = process.env.PORT || 5000;
 // middleware
 app.use(cors());
 app.use(express.json());
+//jwt middleware
+const verifyJWT = (req, res, next) => {
+  const authorization = req.headers.authorization;
+  if (!authorization) {
+    return res.status(401).send({ error: true, message: 'unauthorized access' });
+  }
+  // bearer token
+  const token = authorization.split(' ')[1];
 
-
+  jwt.verify(token, process.env.ACCESS_TOKEN_SECRET, (err, decoded) => {
+    if (err) {
+      return res.status(401).send({ error: true, message: 'unauthorized access' })
+    }
+    req.decoded = decoded;
+    next();
+  })
+}
 
 const uri = `mongodb+srv://${process.env.DB_USER}:${process.env.DB_PASS}@cluster0.kzrcuv8.mongodb.net/?retryWrites=true&w=majority`;
 
@@ -65,6 +80,13 @@ async function run() {
       res.send(result);
     })
 
+    app.get('/users/:email', async(req, res)=>{
+      const email = req.params.email;
+      const query = { email: email }
+      const user = await usersCollection.findOne(query);
+      res.send(user);
+    })
+
     app.patch('/users/admin/:id', async (req, res) => {
       const id = req.params.id;
       //console.log(id);
@@ -98,12 +120,17 @@ async function run() {
       res.send(result)
     })
 
-    // class cart collection api
+    // class cart collection api verifyJWT
     app.get('/carts', async (req, res) => {
       const email = req.query.email;
       if (!email) {
         res.send([])
       }
+
+      // const decodedEmail = req.decoded.email;
+      // if (email !== decodedEmail) {
+      //   return res.status(403).send({ error: true, message: 'forbidden access' })
+      // }
 
       const query = { email: email };
       const result = await classCartCollection.find(query).toArray();
