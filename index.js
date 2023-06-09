@@ -46,6 +46,7 @@ async function run() {
     const instructorCollection = client.db("unitedSportsDb").collection("instructors");
     const sportsClassCollection = client.db("unitedSportsDb").collection("sportsClass");
     const classCartCollection = client.db("unitedSportsDb").collection("classCart");
+   // const classPostStatusCollection = client.db("unitedSportsDb").collection("postClass");
 
     // jwt
     app.post('/jwt', (req, res) => {
@@ -119,9 +120,20 @@ async function run() {
       const result = await sportsClassCollection.find().sort({ createdAt: -1 }).toArray();
       res.send(result)
     })
+    // app.post("/addClass", async (req, res) => {
+    //   const body = req.body;
+    //   body.createdAt = new Date();
+    //   if (!body) {
+    //     return res.status(404).send({ message: "body data not found" })
+    //   }
+    //   const result = await sportsClassCollection.insertOne(body);
+    //   // console.log(result);
+    //   res.send(result);
+    // })
     app.post("/addClass", async (req, res) => {
       const body = req.body;
       body.createdAt = new Date();
+      body.status = 'pending'
       if (!body) {
         return res.status(404).send({ message: "body data not found" })
       }
@@ -129,6 +141,39 @@ async function run() {
       // console.log(result);
       res.send(result);
     })
+
+    app.get('/addClass', async (req, res) => {
+      const result = await sportsClassCollection.find().toArray();
+      res.send(result);
+    });
+
+    app.patch('/addClass/admin/:id', async (req, res) => {
+      const id = req.params.id;
+      //console.log(id);
+      //console.log('status', req.body.status);
+      const filter = { _id: new ObjectId(id) };
+      const options = { upsert: true };
+
+      const updateDoc = {
+        $set: {
+          // role: 'admin'
+          status: req.body.status
+        },
+      }
+
+      const result = await sportsClassCollection.updateOne(filter, updateDoc, options);
+      res.send(result);
+
+    })
+
+    app.delete('/addClass/:id', async (req, res) => {
+      const id = req.params.id;
+      //console.log('id',id)
+      const query = { _id: new ObjectId(id) };
+      const result = await classPostStatusCollection.deleteOne(query);
+      res.send(result);
+    })
+    
 
 
     // class cart collection api verifyJWT
