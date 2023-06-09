@@ -170,7 +170,7 @@ async function run() {
       const id = req.params.id;
       //console.log('id',id)
       const query = { _id: new ObjectId(id) };
-      const result = await classPostStatusCollection.deleteOne(query);
+      const result = await sportsClassCollection.deleteOne(query);
       res.send(result);
     })
     
@@ -194,7 +194,7 @@ async function run() {
 
 
     })
-    app.post('/carts', verifyJWT, async (req, res) => {
+    app.post('/carts',  async (req, res) => {
       const classItem = req.body;
       //console.log(classItem);
       const result = await classCartCollection.insertOne(classItem);
