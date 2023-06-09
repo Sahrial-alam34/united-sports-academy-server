@@ -80,7 +80,7 @@ async function run() {
       res.send(result);
     })
 
-    app.get('/users/:email', async(req, res)=>{
+    app.get('/users/:email', async (req, res) => {
       const email = req.params.email;
       const query = { email: email }
       const user = await usersCollection.findOne(query);
@@ -119,6 +119,17 @@ async function run() {
       const result = await sportsClassCollection.find().toArray();
       res.send(result)
     })
+    app.post("/addClass", async (req, res) => {
+      const body = req.body;
+      body.createdAt = new Date();
+      if (!body) {
+        return res.status(404).send({ message: "body data not found" })
+      }
+      const result = await sportsClassCollection.insertOne(body);
+      // console.log(result);
+      res.send(result);
+    })
+
 
     // class cart collection api verifyJWT
     app.get('/carts', async (req, res) => {
@@ -138,7 +149,7 @@ async function run() {
 
 
     })
-    app.post('/carts', async (req, res) => {
+    app.post('/carts', verifyJWT, async (req, res) => {
       const classItem = req.body;
       //console.log(classItem);
       const result = await classCartCollection.insertOne(classItem);
