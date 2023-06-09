@@ -2,6 +2,7 @@ const express = require('express');
 const app = express();
 const cors = require('cors');
 require('dotenv').config();
+const jwt = require('jsonwebtoken');
 const { MongoClient, ServerApiVersion, ObjectId } = require('mongodb');
 const port = process.env.PORT || 5000;
 
@@ -30,6 +31,14 @@ async function run() {
     const instructorCollection = client.db("unitedSportsDb").collection("instructors");
     const sportsClassCollection = client.db("unitedSportsDb").collection("sportsClass");
     const classCartCollection = client.db("unitedSportsDb").collection("classCart");
+
+    // jwt
+    app.post('/jwt', (req, res) => {
+      const user = req.body;
+      const token = jwt.sign(user, process.env.ACCESS_TOKEN_SECRET, { expiresIn: '1h' })
+
+      res.send({ token })
+    })
 
     // user api
     app.get('/users', async (req, res) => {
@@ -62,7 +71,7 @@ async function run() {
       //console.log('role', req.body.role);
       const filter = { _id: new ObjectId(id) };
       const options = { upsert: true };
-      
+
       const updateDoc = {
         $set: {
           // role: 'admin'
@@ -70,7 +79,7 @@ async function run() {
         },
       }
 
-      const result = await usersCollection.updateOne(filter, updateDoc,options);
+      const result = await usersCollection.updateOne(filter, updateDoc, options);
       res.send(result);
 
     })
