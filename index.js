@@ -115,6 +115,13 @@ async function run() {
       const result = await instructorCollection.find().toArray();
       res.send(result)
     })
+    app.get('/singleInstructor/:email', async (req, res) => {
+      const email = req.params.email;
+
+      const result = await sportsClassCollection.find({ postedBy: req.params.email }).toArray()
+      res.send(result)
+      
+    })
 
     // class api
     app.get('/classes', async (req, res) => {
@@ -290,8 +297,11 @@ async function run() {
       // Update the available seat count
       sportsClass.availableSeat = sportsClass.availableSeat - 1;
       const updateResult = await sportsClassCollection.updateOne(filter, { $set: sportsClass });
+      // Update the enrolled student count
+      sportsClass.students = sportsClass.students + 1;
+      const updateStudents = await sportsClassCollection.updateOne(filter, { $set: sportsClass });
 
-      res.send({ insertResult, deleteResult, updateResult })
+      res.send({ insertResult, deleteResult, updateResult,updateStudents })
     })
 
 
