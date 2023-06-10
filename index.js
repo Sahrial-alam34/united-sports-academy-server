@@ -174,7 +174,7 @@ async function run() {
       const result = await sportsClassCollection.deleteOne(query);
       res.send(result);
     })
-    
+
 
 
     // class cart collection api verifyJWT
@@ -195,7 +195,7 @@ async function run() {
 
 
     })
-    app.post('/carts',  async (req, res) => {
+    app.post('/carts', async (req, res) => {
       const classItem = req.body;
       //console.log(classItem);
       const result = await classCartCollection.insertOne(classItem);
@@ -211,18 +211,18 @@ async function run() {
     })
 
     //get single payment details
-      
-      app.get('/carts/:id', async (req, res) => {
-        const id = req.params.id;
-        const query = { _id: new ObjectId(id) }
-        const result = await classCartCollection.findOne(query);
-        res.send(result)
-      })
+
+    app.get('/carts/:id', async (req, res) => {
+      const id = req.params.id;
+      const query = { _id: new ObjectId(id) }
+      const result = await classCartCollection.findOne(query);
+      res.send(result)
+    })
 
     // create payment intent
     app.post('/create-payment-intent', async (req, res) => {
       const { price } = req.body;
-      
+
       const amount = parseInt(price * 100);
       console.log(price, amount)
       const paymentIntent = await stripe.paymentIntents.create({
@@ -240,11 +240,20 @@ async function run() {
     //payment related api
     app.post('/payments', async (req, res) => {
       const payment = req.body;
+      //console.log('payment', payment)
       const insertResult = await paymentCollection.insertOne(payment);
-      res.send(insertResult)
-      // const query = { _id: { $in: payment.cartItems.map(id => new ObjectId(id)) } }
-      // const deleteResult = await cartCollection.deleteMany(query);
-      // res.send({ insertResult, deleteResult })
+      //res.send(insertResult)
+      const query = { _id: new ObjectId(payment.cartClassId) }
+      const deleteResult = await classCartCollection.deleteOne(query);
+      const filter = { _id: new ObjectId(payment.classId) };
+      // Find the document in the sportsClass collection
+      const sportsClass = await sportsClassCollection.findOne(filter);
+      //console.log(sportsClass)
+      // Update the available seat count
+      sportsClass.availableSeat = sportsClass.availableSeat - 1;
+      const updateResult = await sportsClassCollection.updateOne(filter, { $set: sportsClass });
+  
+       res.send({ insertResult, deleteResult,updateResult})
     })
 
 
