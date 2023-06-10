@@ -121,6 +121,15 @@ async function run() {
       const result = await sportsClassCollection.find().sort({ createdAt: -1 }).toArray();
       res.send(result)
     })
+
+
+    // app.get('/carts/:id', async (req, res) => {
+    //   const id = req.params.id;
+    //   const query = { _id: new ObjectId(id) }
+    //   const result = await classCartCollection.findOne(query);
+    //   res.send(result)
+    // })
+
     // app.post("/addClass", async (req, res) => {
     //   const body = req.body;
     //   body.createdAt = new Date();
@@ -219,12 +228,41 @@ async function run() {
       res.send(result)
     })
 
+    //admin feedback 
+    app.get('/feedback/:id', async (req, res) => {
+      const id = req.params.id;
+      console.log('id', id)
+      const query = { _id: new ObjectId(id) }
+      const result = await sportsClassCollection.findOne(query);
+      res.send(result)
+    })
+    
+    //admin feedback send
+    app.patch('/feedback/admin/:id', async (req, res) => {
+      const id = req.params.id;
+      //console.log(id);
+      //console.log('status', req.body.feedback);
+      const filter = { _id: new ObjectId(id) };
+      const options = { upsert: true };
+
+      const updateDoc = {
+        $set: {
+        
+          feedback: req.body.feedback
+        },
+      }
+
+      const result = await sportsClassCollection.updateOne(filter, updateDoc, options);
+      res.send(result);
+
+    })
+
     // create payment intent
     app.post('/create-payment-intent', async (req, res) => {
       const { price } = req.body;
 
       const amount = parseInt(price * 100);
-      console.log(price, amount)
+      // console.log(price, amount)
       const paymentIntent = await stripe.paymentIntents.create({
         amount: amount,
         currency: "usd",
@@ -252,8 +290,8 @@ async function run() {
       // Update the available seat count
       sportsClass.availableSeat = sportsClass.availableSeat - 1;
       const updateResult = await sportsClassCollection.updateOne(filter, { $set: sportsClass });
-  
-       res.send({ insertResult, deleteResult,updateResult})
+
+      res.send({ insertResult, deleteResult, updateResult })
     })
 
 
