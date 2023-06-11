@@ -13,6 +13,7 @@ app.use(express.json());
 //jwt middleware
 const verifyJWT = (req, res, next) => {
   const authorization = req.headers.authorization;
+  //console.log('auth 16',authorization);
   if (!authorization) {
     return res.status(401).send({ error: true, message: 'unauthorized access' });
   }
@@ -56,15 +57,35 @@ async function run() {
 
       res.send({ token })
     })
+    // Warning: use verifyJWT before using verifyAdmin
+    const verifyAdmin = async (req, res, next) => {
+      const email = req.decoded.email;
+      const query = { email: email }
+      const user = await usersCollection.findOne(query);
+      if (user?.role !== 'admin') {
+        return res.status(403).send({ error: true, message: 'forbidden message' });
+      }
+      next();
+    }
+   
+    const verifyInstructor = async (req, res, next) => {
+      const email = req.decoded.email;
+      const query = { email: email }
+      const user = await usersCollection.findOne(query);
+      if (user?.role !== 'instructor') {
+        return res.status(403).send({ error: true, message: 'forbidden message' });
+      }
+      next();
+    }
 
     // user api
-    app.get('/users', async (req, res) => {
+    app.get('/users',verifyJWT,  async (req, res) => {
       const result = await usersCollection.find().toArray();
       res.send(result);
     });
 
-  
-    app.post('/users', async (req, res) => {
+
+    app.post('/users',  async (req, res) => {
       const user = req.body;
       const query = { email: user.email }
       const existingUser = await usersCollection.findOne(query);
@@ -86,6 +107,7 @@ async function run() {
 
     app.get('/users/:email', async (req, res) => {
       const email = req.params.email;
+
       const query = { email: email }
       const user = await usersCollection.findOne(query);
       res.send(user);
@@ -95,6 +117,7 @@ async function run() {
       const id = req.params.id;
       //console.log(id);
       //console.log('role', req.body.role);
+
       const filter = { _id: new ObjectId(id) };
       const options = { upsert: true };
 
@@ -117,18 +140,18 @@ async function run() {
       const result = await instructorCollection.find().toArray();
       res.send(result)
     })
-      //role instructor
-      app.get('/instructorUsers', async (req, res) => {
-        const result = await usersCollection.find().toArray();
-        res.send(result);
-      });
+    //role instructor
+    app.get('/instructorUsers', async (req, res) => {
+      const result = await usersCollection.find().toArray();
+      res.send(result);
+    });
     app.get('/singleInstructor/:email', async (req, res) => {
       const email = req.params.email;
 
       const result = await sportsClassCollection.find({ postedBy: req.params.email }).toArray()
       res.send(result)
 
- 
+
     })
     app.get('/instructorMoreDetails/:id', async (req, res) => {
       const id = req.params.id;
@@ -252,16 +275,16 @@ async function run() {
 
 
     // class cart collection api verifyJWT
-    app.get('/carts', async (req, res) => {
+    app.get('/carts', verifyJWT, async (req, res) => {
       const email = req.query.email;
       if (!email) {
         res.send([])
       }
 
-      // const decodedEmail = req.decoded.email;
-      // if (email !== decodedEmail) {
-      //   return res.status(403).send({ error: true, message: 'forbidden access' })
-      // }
+      const decodedEmail = req.decoded.email;
+      if (email !== decodedEmail) {
+        return res.status(403).send({ error: true, message: 'forbidden access' })
+      }
 
       const query = { email: email };
       const result = await classCartCollection.find(query).toArray();
@@ -353,10 +376,12 @@ async function run() {
       const sportsClass = await sportsClassCollection.findOne(filter);
       //console.log(sportsClass)
       // Update the available seat count
-      sportsClass.availableSeat = sportsClass.availableSeat - 1;
+      let seats = parseInt(sportsClass.availableSeat)
+      sportsClass.availableSeat = seats - 1;
       const updateResult = await sportsClassCollection.updateOne(filter, { $set: sportsClass });
       // Update the enrolled student count
-      sportsClass.students = sportsClass.students + 1;
+      let students= parseInt(sportsClass.students)
+      sportsClass.students = students + 1;
       const updateStudents = await sportsClassCollection.updateOne(filter, { $set: sportsClass });
 
       res.send({ insertResult, deleteResult, updateResult, updateStudents })
