@@ -62,6 +62,12 @@ async function run() {
       const result = await usersCollection.find().toArray();
       res.send(result);
     });
+
+    //role instructor
+    app.get('/instructorUsers', async (req, res) => {
+      const result = await usersCollection.find().toArray();
+      res.send(result);
+    });
     app.post('/users', async (req, res) => {
       const user = req.body;
       const query = { email: user.email }
