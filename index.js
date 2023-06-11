@@ -183,12 +183,36 @@ async function run() {
 
     })
 
+    //delete class
     app.delete('/addClass/:id', async (req, res) => {
       const id = req.params.id;
       //console.log('id',id)
       const query = { _id: new ObjectId(id) };
       const result = await sportsClassCollection.deleteOne(query);
       res.send(result);
+    })
+
+    // update class
+    app.get('/updatedClass/:id', async (req, res) => {
+      const id = req.params.id;
+      const query = { _id: new ObjectId(id) }
+      const result = await sportsClassCollection.findOne(query);
+      res.send(result)
+    })
+    app.put('/updatedAClass/:id', async (req, res) => {
+      const id = req.params.id;
+      const filter = { _id: new ObjectId(id) }
+      const options = { upsert: true };
+      const updatedAClass = req.body;
+      const item = {
+        $set: {
+          title: updatedAClass.title,
+          Price: updatedAClass.Price,
+          availableSeat: updatedAClass.availableSeat
+        }
+      }
+      const result = await sportsClassCollection.updateOne(filter, item, options)
+      res.send(result)
     })
 
 
