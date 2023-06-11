@@ -63,11 +63,7 @@ async function run() {
       res.send(result);
     });
 
-    //role instructor
-    app.get('/instructorUsers', async (req, res) => {
-      const result = await usersCollection.find().toArray();
-      res.send(result);
-    });
+  
     app.post('/users', async (req, res) => {
       const user = req.body;
       const query = { email: user.email }
@@ -121,12 +117,25 @@ async function run() {
       const result = await instructorCollection.find().toArray();
       res.send(result)
     })
+      //role instructor
+      app.get('/instructorUsers', async (req, res) => {
+        const result = await usersCollection.find().toArray();
+        res.send(result);
+      });
     app.get('/singleInstructor/:email', async (req, res) => {
       const email = req.params.email;
 
       const result = await sportsClassCollection.find({ postedBy: req.params.email }).toArray()
       res.send(result)
 
+ 
+    })
+    app.get('/instructorMoreDetails/:id', async (req, res) => {
+      const id = req.params.id;
+      //console.log('id',id)
+      const query = { _id: new ObjectId(id) }
+      const result = await instructorCollection.findOne(query);
+      res.send(result)
     })
 
     // class api
