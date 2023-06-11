@@ -120,7 +120,7 @@ async function run() {
 
       const result = await sportsClassCollection.find({ postedBy: req.params.email }).toArray()
       res.send(result)
-      
+
     })
 
     // class api
@@ -215,6 +215,25 @@ async function run() {
       res.send(result)
     })
 
+    //enrolled classes
+    app.get('/enrolledClasses', async (req, res) => {
+      const email = req.query.email;
+      if (!email) {
+        res.send([])
+      }
+
+      // const decodedEmail = req.decoded.email;
+      // if (email !== decodedEmail) {
+      //   return res.status(403).send({ error: true, message: 'forbidden access' })
+      // }
+
+      const query = { email: email };
+      const result = await paymentCollection.find(query).toArray();
+      res.send(result);
+
+
+    })
+
 
 
     // class cart collection api verifyJWT
@@ -267,7 +286,7 @@ async function run() {
       const result = await sportsClassCollection.findOne(query);
       res.send(result)
     })
-    
+
     //admin feedback send
     app.patch('/feedback/admin/:id', async (req, res) => {
       const id = req.params.id;
@@ -278,7 +297,7 @@ async function run() {
 
       const updateDoc = {
         $set: {
-        
+
           feedback: req.body.feedback
         },
       }
@@ -325,7 +344,26 @@ async function run() {
       sportsClass.students = sportsClass.students + 1;
       const updateStudents = await sportsClassCollection.updateOne(filter, { $set: sportsClass });
 
-      res.send({ insertResult, deleteResult, updateResult,updateStudents })
+      res.send({ insertResult, deleteResult, updateResult, updateStudents })
+    })
+
+    // get payment history
+    app.get('/paymentHistory', async (req, res) => {
+      const email = req.query.email;
+      if (!email) {
+        res.send([])
+      }
+
+      // const decodedEmail = req.decoded.email;
+      // if (email !== decodedEmail) {
+      //   return res.status(403).send({ error: true, message: 'forbidden access' })
+      // }
+
+      const query = { email: email };
+      const result = await paymentCollection.find(query).sort({ date: -1 }).toArray();
+      res.send(result);
+
+
     })
 
 
