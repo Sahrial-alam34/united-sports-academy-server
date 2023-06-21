@@ -406,6 +406,31 @@ async function run() {
 
     })
 
+    // admin state
+    app.get('/admin-stats', async(req, res)=>{
+      const users = await usersCollection.estimatedDocumentCount()
+      const classes = await sportsClassCollection.estimatedDocumentCount();
+      const orders = await paymentCollection.estimatedDocumentCount();
+
+      const payments = await paymentCollection.find().toArray();
+      const revenue = payments.reduce((sum, payment) => sum + payment.price, 0)
+
+      res.send({
+        users,
+        classes,
+        orders,
+        revenue
+      })
+    })
+
+    // app.get('/order-stats', async(req, res) =>{
+    //   const payments = await paymentCollection.find().toArray();
+    //   const filter = { _id: new ObjectId(payments.classId) };
+    //   // Find the document in the sportsClass collection
+    //   const sportsClass = await sportsClassCollection.findOne(filter);
+    //   res.send(result)
+
+    // })
 
     // Send a ping to confirm a successful connection
     await client.db("admin").command({ ping: 1 });
